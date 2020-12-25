@@ -39,8 +39,7 @@ interface FormProps {
 const SignIn: React.FC = () => {
   const navigation = useNavigation();
 
-  const {signIn, user} = useAuth();
-  console.log(user);
+  const {signIn} = useAuth();
 
   const formRef = useRef<FormHandles>(null);
   const passwordInputRef = useRef<TextInput>(null);

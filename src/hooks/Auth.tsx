@@ -12,8 +12,7 @@ interface User {
   id: string;
   name: string;
   email: string;
-  createdAt: string;
-  updatedAt: string;
+  avatar_url: string;
 }
 
 interface UserAuthProps {
@@ -32,6 +31,7 @@ interface AuthContextData {
   loading: boolean;
   signIn(credentials: CredentialsProps): Promise<void>;
   signOut(): void;
+  updateUser(user: User): Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
@@ -54,6 +54,7 @@ const AuthProvider: React.FC = ({children}) => {
        */
 
       if (token && user) {
+        api.defaults.headers.authorization = `Bearer ${token}`;
         setUserAuth({token, user: JSON.parse(user)});
       }
     }
@@ -72,6 +73,8 @@ const AuthProvider: React.FC = ({children}) => {
       ['@GoBarber:user', JSON.stringify(user)],
     ]);
 
+    api.defaults.headers.authorization = `Bearer ${token}`;
+
     setUserAuth({token, user});
   }, []);
 
@@ -81,6 +84,18 @@ const AuthProvider: React.FC = ({children}) => {
     setUserAuth({} as UserAuthProps);
   }, []);
 
+  const updateUser = useCallback(
+    async (user: User) => {
+      await AsyncStorage.setItem('@GoBarber:user', JSON.stringify(user));
+
+      setUserAuth({
+        token: userAuth.token,
+        user,
+      });
+    },
+    [userAuth.token],
+  );
+
   return (
     <AuthContext.Provider
       value={{
@@ -89,6 +104,7 @@ const AuthProvider: React.FC = ({children}) => {
         signOut,
         token: userAuth.token,
         loading,
+        updateUser,
       }}>
       {children}
     </AuthContext.Provider>

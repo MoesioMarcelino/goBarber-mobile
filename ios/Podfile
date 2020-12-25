@@ -10,6 +10,8 @@ target 'appgobarber' do
 
   pod 'RNCAsyncStorage', :path => '../node_modules/@react-native-async-storage/async-storage'
 
+  pod 'RNDateTimePicker', :path => '../node_modules/@react-native-community/datetimepicker'
+
   target 'appgobarberTests' do
     inherit! :complete
     # Pods for testing
