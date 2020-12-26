@@ -1,5 +1,6 @@
 import styled from 'styled-components/native';
 import {Platform} from 'react-native';
+import Button from '../../components/Button';
 
 export const Container = styled.View`
   flex: 1;
@@ -9,7 +10,7 @@ export const Container = styled.View`
 `;
 
 export const BackButton = styled.TouchableOpacity`
-  margin-top: 80px;
+  margin-top: 160px;
 `;
 
 export const Title = styled.Text`
@@ -27,4 +28,17 @@ export const UserAvatar = styled.Image`
   border-radius: 98px;
 
   align-self: center;
+`;
+
+export const UploadButton = styled.View`
+  margin-bottom: 20px;
+  height: 40px;
+`;
+
+export const LogoutButton = styled(Button)`
+  background: red;
+`;
+
+export const LogoutButtonText = styled.Text`
+  color: #fff;
 `;

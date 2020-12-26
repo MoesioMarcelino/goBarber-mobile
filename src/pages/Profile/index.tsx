@@ -1,4 +1,4 @@
-import React, {useCallback, useRef} from 'react';
+import React, {useCallback, useRef, useState} from 'react';
 import {
   View,
   ScrollView,
@@ -6,8 +6,11 @@ import {
   Platform,
   TextInput,
   Alert,
+  Button as ButtonRN,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
+import * as ImagePicker from 'react-native-image-picker/src';
+import Modal from 'react-native-modal';
 
 import {
   Container,
@@ -15,6 +18,9 @@ import {
   Title,
   UserAvatarButton,
   UserAvatar,
+  UploadButton,
+  LogoutButton,
+  LogoutButtonText,
 } from './styles';
 
 import Input from '../../components/Input';
@@ -36,8 +42,10 @@ interface FormProps {
 }
 
 const Profile: React.FC = () => {
-  const {user, updateUser} = useAuth();
+  const {user, updateUser, signOut} = useAuth();
   const navigation = useNavigation();
+
+  const [showModalUpdateAvatar, setShowModalUpdateAvatar] = useState(false);
 
   const formRef = useRef<FormHandles>(null);
   const emailInputRef = useRef<TextInput>(null);
@@ -46,7 +54,7 @@ const Profile: React.FC = () => {
   const oldPasswordInputRef = useRef<TextInput>(null);
   const confirmPasswordInputRef = useRef<TextInput>(null);
 
-  const handleSignUp = useCallback(
+  const handleUpdateInformations = useCallback(
     async (data: FormProps) => {
       formRef.current?.setErrors({});
       try {
@@ -125,6 +133,46 @@ const Profile: React.FC = () => {
     navigation.goBack();
   }, [navigation]);
 
+  const toggleModal = useCallback(() => {
+    setShowModalUpdateAvatar(!showModalUpdateAvatar);
+  }, [showModalUpdateAvatar]);
+
+  const updatePhotoFromCamera = useCallback(() => {
+    ImagePicker.launchCamera(
+      {
+        mediaType: 'photo',
+        saveToPhotos: true,
+        quality: 0.5,
+      },
+      (response) => {
+        console.log(response);
+      },
+    );
+  }, []);
+
+  const updatePhotoFromGallery = useCallback(() => {
+    ImagePicker.launchImageLibrary(
+      {
+        mediaType: 'photo',
+        quality: 0.5,
+      },
+      async (response) => {
+        const data = new FormData();
+
+        data.append('avatar', {
+          type: 'image/jpeg',
+          name: `${user.id}.jpg`,
+          uri: response.uri,
+        });
+
+        const apiResponse = await api.patch('users/avatar', data);
+
+        updateUser(apiResponse.data);
+        toggleModal();
+      },
+    );
+  }, [toggleModal, updateUser, user.id]);
+
   return (
     <KeyboardAvoidingView
       style={{flex: 1}}
@@ -137,14 +185,17 @@ const Profile: React.FC = () => {
           <BackButton onPress={handleGoBak}>
             <Icon name="chevron-left" size={24} color="#999591" />
           </BackButton>
-          <UserAvatarButton onPress={() => {}}>
+          <UserAvatarButton onPress={toggleModal}>
             <UserAvatar source={{uri: user.avatar_url}} />
           </UserAvatarButton>
           <View>
             <Title>Meu Perfil</Title>
           </View>
 
-          <Form initialData={user} ref={formRef} onSubmit={handleSignUp}>
+          <Form
+            initialData={user}
+            ref={formRef}
+            onSubmit={handleUpdateInformations}>
             <Input
               autoCapitalize="words"
               name="name"
@@ -200,9 +251,29 @@ const Profile: React.FC = () => {
             <Button onPress={() => formRef.current?.submitForm()}>
               Salvar alterações
             </Button>
+            <LogoutButton onPress={signOut}>
+              <LogoutButtonText>Sair</LogoutButtonText>
+            </LogoutButton>
           </Form>
         </Container>
       </ScrollView>
+      <Modal
+        isVisible={showModalUpdateAvatar}
+        backdropOpacity={0.9}
+        backdropColor="#3e3b47">
+        <UploadButton>
+          <ButtonRN title="Usar câmera" onPress={updatePhotoFromCamera} />
+        </UploadButton>
+        <UploadButton>
+          <ButtonRN
+            title="Selecionar da galera"
+            onPress={updatePhotoFromGallery}
+          />
+        </UploadButton>
+        <UploadButton>
+          <ButtonRN title="Cancelar" onPress={toggleModal} color="red" />
+        </UploadButton>
+      </Modal>
     </KeyboardAvoidingView>
   );
 };

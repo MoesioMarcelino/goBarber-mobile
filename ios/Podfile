@@ -12,6 +12,8 @@ target 'appgobarber' do
 
   pod 'RNDateTimePicker', :path => '../node_modules/@react-native-community/datetimepicker'
 
+  pod 'react-native-image-picker', :path => '../node_modules/react-native-image-picker'
+
   target 'appgobarberTests' do
     inherit! :complete
     # Pods for testing
